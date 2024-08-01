@@ -15,7 +15,7 @@ services:
       - ./database/data:/var/lib/mysql
 
   app:
-    image: 360dcb66fae4e611c7a21b01df52ea0d07d56a1930a6b618ad2fc94928421b9c
+    image: fourdata-backend
     ports:
       - "8080:80"
     environment:
