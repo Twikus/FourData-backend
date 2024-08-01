@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  database:
+    platform: linux/amd64
+    image: mysql:${MYSQL_VERSION:-5.7}
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-app}
+      MYSQL_USER: ${MYSQL_USER:-fourdata}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-fourdata}
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./database/data:/var/lib/mysql
+
+  app:
+    image: 360dcb66fae4e611c7a21b01df52ea0d07d56a1930a6b618ad2fc94928421b9c
+    ports:
+      - "8080:80"
+    environment:
+      - DATABASE_URL=mysql://${MYSQL_USER:-fourdata}:${MYSQL_PASSWORD:-fourdata}@database/${MYSQL_DATABASE:-app}
