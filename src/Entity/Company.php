@@ -2,10 +2,16 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\CompanyRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CompanyRepository::class)]
+#[ApiResource(
+    openapiContext: ['security' => [['JWT' => []]]],
+    security: "is_granted('ROLE_USER')",
+    operations: []
+)]
 class Company
 {
     #[ORM\Id]
