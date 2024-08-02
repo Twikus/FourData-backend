@@ -24,7 +24,9 @@ security:
             pattern:   ^/api
             stateless: true
             jwt: ~
-    
+            logout:
+                path: api_logout
+
     access_control:
         - { path: ^/api/docs, roles: PUBLIC_ACCESS }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
