@@ -3,10 +3,3 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
-
-api_login:
-    path: /api/login
-
-swagger_ui:
-    path: /api/docs
-    controller: api_platform.action.swagger_ui
