@@ -8,7 +8,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class UserController extends AbstractController
 {
-    #[Route('/api/me', name: 'api_me')]
+    #[Route('/api/me', name: 'api_me', methods: ['GET'])]
     public function me(): Response
     {
         // get the user information
