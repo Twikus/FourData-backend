@@ -11,6 +11,16 @@ class UserController extends AbstractController
     #[Route('/api/me', name: 'api_me')]
     public function me(): Response
     {
-        return $this->json($this->getUser());
+        // get the user information
+        $user = $this->getUser();
+
+        // return the user information
+        return $this->json([
+            'id' => $user->getId(),
+            'email' => $user->getEmail(),
+            'firstname' => $user->getFirstname(),
+            'lastname' => $user->getLastname(),
+            'roles' => $user->getRoles(),
+        ]);
     }
 }
