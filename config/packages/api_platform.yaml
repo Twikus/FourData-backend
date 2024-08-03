@@ -8,4 +8,7 @@ api_platform:
                 name: Authorization
                 type: header
     formats:
+        jsonld: ['application/ld+json']
         json: ['application/json']
+        html: ['text/html']
+        
