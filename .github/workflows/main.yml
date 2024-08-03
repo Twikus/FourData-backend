@@ -49,10 +49,6 @@ jobs:
       - name: Install Dependencies
         run: composer install --no-ansi --no-interaction --no-scripts --prefer-dist
 
-      - name: Wait for MySQL to be ready
-        run: |
-          dockerize -wait tcp://localhost:3306 -timeout 1m
-
       - name: Create Database
         run: php bin/console doctrine:database:create --env=test
 
