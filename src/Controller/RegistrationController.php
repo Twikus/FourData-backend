@@ -42,6 +42,14 @@ class RegistrationController extends AbstractController
 
         $token = $JWTManager->create($user);
 
-        return new JsonResponse(['token' => $token]);
+        return new JsonResponse([
+            'user' => [
+                'email' => $user->getEmail(),
+                'firstname' => $user->getFirstname(),
+                'lastname' => $user->getLastname(),
+                'roles' => $user->getRoles()
+            ],
+            'token' => $token
+        ]);
     }
 }
