@@ -46,9 +46,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-php-
 
-      - name: Update Dependencies
-        run: composer update -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
-
       - name: Install Dependencies
         run: composer install --no-ansi --no-interaction --no-scripts --prefer-dist
 
