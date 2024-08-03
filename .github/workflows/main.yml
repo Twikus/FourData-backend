@@ -10,21 +10,32 @@ permissions:
   contents: read
 
 jobs:
+  test-env-variables:
+    runs-on: ubuntu-latest
+    steps:
+        - name: "Check out code"
+          uses: actions/checkout@v3
+
+        - name: "Display environment variables"
+          run: |
+            echo "MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}"
+            echo "MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}"
+            
   symfony-tests:
     runs-on: ubuntu-latest
     services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
+        mysql:
+            image: mysql:8.0
+            env:
+                MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+                MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+            ports:
+                - 3306:3306
+            options: >-
+                --health-cmd="mysqladmin ping --silent"
+                --health-interval=10s
+                --health-timeout=5s
+                --health-retries=3
     steps:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
