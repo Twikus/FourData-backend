@@ -12,12 +12,7 @@ class SecurityController extends AbstractController
     #[Route(path: '/api/login', name: 'api_login', methods: ['POST'])]
     public function ApiLogin(): JsonResponse
     {
-        $user = $this->getUser();
-
-        return $this->json([
-            'username' => $user->getUserIdentifier(),
-            'roles' => $user->getRoles(),
-        ]);
+        throw new LogicException('This method can be blank - it will be intercepted by the authenticator');
     }
 
     #[Route(path: '/api/logout', name: 'api_logout', methods: ['POST'])]

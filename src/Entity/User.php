@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
 use ApiPlatform\Metadata\ApiResource;
@@ -16,10 +17,73 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 #[ApiResource(
+    formats: ['json'], 
     openapiContext: ['security' => [['JWT' => []]]],
     security: "is_granted('ROLE_USER')",
     operations: [
-        new Get(uriTemplate: '/api/me', routeName: 'api_me'),
+        new Get(
+            name: 'api_users_me',
+            uriTemplate: '/api/users/me',
+            openapiContext: [
+                'summary' => 'Get the current user',
+                'description' => 'Get the current user',
+            ],
+            security: "is_granted('ROLE_USER')",
+            securityMessage: 'Only authenticated users can access this resource.',
+        ),
+        new Post(
+            name: 'api_register',
+            uriTemplate: '/api/register',
+            openapiContext: [
+                'summary' => 'Register a new user',
+                'description' => 'Register a new user',
+                'requestBody' => [
+                    'content' => [
+                        'application/json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'email' => ['type' => 'string'],
+                                    'password' => ['type' => 'string'],
+                                    'firstname' => ['type' => 'string'],
+                                    'lastname' => ['type' => 'string'],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'responses' => [
+                    '201' => [
+                        'description' => 'User created',
+                        'content' => [
+                            'application/json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'token' => ['type' => 'string'],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    '400' => [
+                        'description' => 'Invalid data',
+                        'content' => [
+                            'application/json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'error' => ['type' => 'string'],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            security: "is_granted('IS_AUTHENTICATED_ANONYMOUSLY')",
+            securityMessage: 'Only anonymous users can access this resource.',
+        ),
     ]
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
