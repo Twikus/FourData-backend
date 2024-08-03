@@ -1,0 +1,14 @@
+api_platform:
+    title: Hello FourData !
+    description: 'Welcome to the FourData API'
+    version: 1.0.0
+    swagger:
+        api_keys:
+            JWT:
+                name: Authorization
+                type: header
+    formats:
+        jsonld: ['application/ld+json']
+        json: ['application/json']
+        html: ['text/html']
+        
