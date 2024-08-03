@@ -199,6 +199,8 @@ use ApiPlatform\Metadata\Put;
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    // TODO : Security of the fields
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
