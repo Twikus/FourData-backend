@@ -2,16 +2,18 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\Post;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
-use ApiPlatform\Metadata\ApiResource;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Put;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -67,13 +69,28 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
                         ],
                     ],
                     '400' => [
-                        'description' => 'Invalid data',
+                        'description' => 'Invalid credentials',
                         'content' => [
                             'application/json' => [
                                 'schema' => [
                                     'type' => 'object',
                                     'properties' => [
-                                        'error' => ['type' => 'string'],
+                                        'code' => ['type' => 'integer'],
+                                        'message' => ['type' => 'string']
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    '401' => [
+                        'description' => 'Unauthorized <strong>(You should be disconnected)</strong>',
+                        'content' => [
+                            'application/json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'code' => ['type' => 'integer'],
+                                        'message' => ['type' => 'string']
                                     ],
                                 ],
                             ],
@@ -84,10 +101,106 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
             security: "is_granted('IS_AUTHENTICATED_ANONYMOUSLY')",
             securityMessage: 'Only anonymous users can access this resource.',
         ),
+        new Put(
+            openapiContext: [
+                'summary' => 'Update the current user',
+                'description' => 'Update the current user',
+                'requestBody' => [
+                    'content' => [
+                        'application/json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'email' => ['type' => 'string'],
+                                    'firstname' => ['type' => 'string'],
+                                    'lastname' => ['type' => 'string'],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'responses' => [
+                    '200' => [
+                        'description' => 'User updated',
+                        'content' => [
+                            'application/json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'email' => ['type' => 'string'],
+                                        'firstname' => ['type' => 'string'],
+                                        'lastname' => ['type' => 'string'],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    '400' => [
+                        'description' => 'Invalid credentials',
+                        'content' => [
+                            'application/json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'code' => ['type' => 'integer'],
+                                        'message' => ['type' => 'string']
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    '403' => [
+                        'description' => 'Forbidden <strong>(You can only update your own account)</strong>',
+                        'content' => [
+                            'application/json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'code' => ['type' => 'integer'],
+                                        'message' => ['type' => 'string']
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            security: "object == user",
+            securityMessage: "You can only update your own account."
+        ),
+        new Delete(
+            openapiContext: [
+                'summary' => 'Delete the current user',
+                'description' => 'Delete the current user',
+                'responses' => [
+                    '204' => [
+                        'description' => 'User deleted',
+                    ],
+                    '403' => [
+                        'description' => 'Forbidden <strong>(You can only delete your own account)</strong>',
+                        'content' => [
+                            'application/json' => [
+                                'schema' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'code' => ['type' => 'integer'],
+                                        'message' => ['type' => 'string']
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ]
+            ],
+            security: "object == user",
+            securityMessage: "You can only delete your own account."
+        )
     ]
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    // TODO : Security of the fields
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]

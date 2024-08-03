@@ -14,6 +14,8 @@ use Doctrine\ORM\Mapping as ORM;
 )]
 class Company
 {
+    // TODO : Security of the fields
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
