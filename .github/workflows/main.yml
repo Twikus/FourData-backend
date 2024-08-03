@@ -49,9 +49,6 @@ jobs:
       - name: Install Dependencies
         run: composer install --no-ansi --no-interaction --no-scripts --prefer-dist
 
-      - name: Generate SSL Key for JWT
-        run: php bin/console lexik:jwt:generate-keypair
-
       - name: Wait for MySQL to be ready
         run: |
           dockerize -wait tcp://localhost:3306 -timeout 1m
