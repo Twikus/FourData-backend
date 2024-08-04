@@ -2,51 +2,78 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
+use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Timestampable\Traits\TimestampableEntity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\CompanyRepository;
-use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: CompanyRepository::class)]
 #[ApiResource(
     openapiContext: ['security' => [['JWT' => []]]],
     security: "is_granted('ROLE_USER')",
-    operations: []
+    operations: [
+        new Get(
+            name: 'api_companies_read',
+            uriTemplate: '/companies/{id}',
+            security: "is_granted('ROLE_USER')",
+        ),
+        new Post(
+            name: 'api_companies_create',
+            uriTemplate: '/companies',
+            security: "is_granted('ROLE_USER')",
+        ),
+        new Put(
+            name: 'api_companies_update',
+            uriTemplate: '/companies/{id}',
+            security: "is_granted('ROLE_USER')",
+        ),
+        new Delete(
+            name: 'api_companies_delete',
+            uriTemplate: '/companies/{id}',
+            security: "is_granted('ROLE_USER')",
+        ),
+    ]
 )]
 class Company
 {
     // TODO : Security of the fields
+    use TimestampableEntity;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups("company:read")]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups("company:read")]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $adress = null;
+    #[Groups("company:read")]
+    private ?string $address = null;
 
     #[ORM\Column]
+    #[Groups("company:read")]
     private ?int $siren = null;
 
     #[ORM\Column]
+    #[Groups("company:read")]
     private ?int $siret = null;
 
     #[ORM\Column(length: 30)]
-    private ?string $tva_number = null;
-
-    // created_at and updated_at are not present in the original code
-    // but it's a good practice to add them
-    #[ORM\Column(type: 'datetime')]
-    private ?\DateTimeInterface $created_at = null;
-
-    #[ORM\Column(type: 'datetime')]
-    private ?\DateTimeInterface $updated_at = null;
+    #[Groups("company:read")]
+    private ?string $tvaNumber = null;
 
     #[ORM\ManyToOne(inversedBy: 'companies')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $user_id = null;
+    #[Groups("company:read")]
+    private ?User $user = null;
 
     public function getId(): ?int
     {
@@ -65,14 +92,14 @@ class Company
         return $this;
     }
 
-    public function getAdress(): ?string
+    public function getAddress(): ?string
     {
-        return $this->adress;
+        return $this->address;
     }
 
-    public function setAdress(string $adress): static
+    public function setAddress(string $address): static
     {
-        $this->adress = $adress;
+        $this->address = $address;
 
         return $this;
     }
@@ -103,48 +130,24 @@ class Company
 
     public function getTvaNumber(): ?string
     {
-        return $this->tva_number;
+        return $this->tvaNumber;
     }
 
-    public function setTvaNumber(string $tva_number): static
+    public function setTvaNumber(string $tvaNumber): static
     {
-        $this->tva_number = $tva_number;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): ?\DateTimeInterface
-    {
-        return $this->created_at;
-    }
-
-    public function setCreatedAt(\DateTimeInterface $created_at): static
-    {
-        $this->created_at = $created_at;
-
-        return $this;
-    }
-
-    public function getUpdatedAt(): ?\DateTimeInterface
-    {
-        return $this->updated_at;
-    }
-
-    public function setUpdatedAt(\DateTimeInterface $updated_at): static
-    {
-        $this->updated_at = $updated_at;
+        $this->tvaNumber = $tvaNumber;
 
         return $this;
     }
 
     public function getUserId(): ?User
     {
-        return $this->user_id;
+        return $this->user;
     }
 
-    public function setUserId(?User $user_id): static
+    public function setUserId(?User $user): static
     {
-        $this->user_id = $user_id;
+        $this->user = $user;
 
         return $this;
     }
