@@ -13,11 +13,16 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Put;
+use Gedmo\Timestampable\Traits\TimestampableEntity;
+use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false, hardDelete: false)]
 #[ApiResource(
     formats: ['json'], 
     openapiContext: ['security' => [['JWT' => []]]],
@@ -194,12 +199,24 @@ use ApiPlatform\Metadata\Put;
             ],
             security: "object == user",
             securityMessage: "You can only delete your own account."
-        )
+        ),
+        new GetCollection(
+            name: 'api_users_companies',
+            uriTemplate: '/api/users/{id}/companies',
+            openapiContext: [
+                'summary' => 'Get the companies of the user',
+                'description' => 'Get the companies of the user',
+            ],
+            security: "object == user",
+            securityMessage: "You can only get the companies of the user."
+        ),
     ]
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     // TODO : Security of the fields
+    use TimestampableEntity;
+    use SoftDeleteableEntity;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -230,7 +247,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Company>
      */
-    #[ORM\OneToMany(targetEntity: Company::class, mappedBy: 'user_id')]
+    #[ORM\OneToMany(targetEntity: Company::class, mappedBy: 'user')]
     private Collection $companies;
 
     public function __construct()
