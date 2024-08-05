@@ -6,6 +6,7 @@ use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class UserController extends AbstractController
@@ -23,17 +24,10 @@ class UserController extends AbstractController
         // get the user information
         $user = $this->getUser();
 
-        // return the user information
-        return $this->json([
-            'id' => $user->getId(),
-            'email' => $user->getEmail(),
-            'firstname' => $user->getFirstname(),
-            'lastname' => $user->getLastname(),
-            'roles' => $user->getRoles(),
-        ]);
+        return $this->json($user, 200, [], ['groups' => 'user:show']);
     }
 
-    #[Route('/api/users/{id}/companies', name: 'api_users_companies', methods: ['GET'])]
+    #[Route('/api/users/{id}/companies', name: 'api_users_companies', methods: ['GET'], requirements: ['id' => Requirement::DIGITS])]
     public function companies(int $id): Response
     {
         // get user by id
@@ -48,6 +42,6 @@ class UserController extends AbstractController
         $companies = $user->getCompanies();
 
         // return the companies information
-        return $this->json($companies);
+        return $this->json($companies, 200, [], ['groups' => 'company:read']);
     }
 }
