@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Routing\Requirement\Requirement;
 
 class CompanyController extends AbstractController
 {
@@ -16,6 +17,29 @@ class CompanyController extends AbstractController
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->entityManager = $entityManager;
+    }
+
+    #[Route('/api/companies/{id}', name: 'api_companies_show', methods: ['GET'], requirements: ['id' => Requirement::DIGITS])]
+    public function show(int $id): Response
+    {
+        // get the user information
+        $user = $this->getUser();
+
+        // get the company by id
+        $company = $this->entityManager->getRepository(Company::class)->find($id);
+
+        // check if the company exists
+        if(!$company) {
+            return $this->json(['error' => 'Company not found'], 404);
+        }
+
+        // check if the user is the owner of the company
+        if($company->getUserId() !== $user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        // return the company information
+        return $this->json($company, 200, [], ['groups' => 'company:read']);
     }
 
     #[Route('/api/companies', name: 'api_companies_create', methods: ['POST'])]
@@ -38,19 +62,15 @@ class CompanyController extends AbstractController
         $company->setSiret($data['siret']);
         $company->setTvaNumber($data['tva_number']);
 
-        // set the created_at and updated_at
-        // $company->setCreatedAt(new \DateTime());
-        // $company->setUpdatedAt(new \DateTime());
-
         // save the company
         $this->entityManager->persist($company);
         $this->entityManager->flush();
 
         // return the company information
-        return $this->json($company);
+        return $this->json($company, 201, [], ['groups' => 'company:read']);
     }
 
-    #[Route('/api/companies/{id}', name: 'api_companies_update', methods: ['PUT'])]
+    #[Route('/api/companies/{id}', name: 'api_companies_update', methods: ['PUT'], requirements: ['id' => Requirement::DIGITS])]
     public function update(int $id, Request $request): Response
     {
         // get the user information
@@ -86,6 +106,33 @@ class CompanyController extends AbstractController
         $this->entityManager->flush();
 
         // return the company information
-        return $this->json($company);
+        return $this->json($company, 200, [], ['groups' => 'company:read']);
+    }
+
+    #[Route('/api/companies/{id}', name: 'api_companies_delete', methods: ['DELETE'], requirements: ['id' => Requirement::DIGITS])]
+    public function delete(int $id): Response
+    {
+        // get the user information
+        $user = $this->getUser();
+
+        // get the company by id
+        $company = $this->entityManager->getRepository(Company::class)->find($id);
+
+        // check if the company exists
+        if(!$company) {
+            return $this->json(['error' => 'Company not found'], 404);
+        }
+
+        // check if the user is the owner of the company
+        if($company->getUserId() !== $user) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        // delete the company
+        $this->entityManager->remove($company);
+        $this->entityManager->flush();
+
+        // return the success message
+        return $this->json(['message' => 'Company deleted']);
     }
 }

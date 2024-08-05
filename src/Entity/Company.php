@@ -18,13 +18,32 @@ use Symfony\Component\Serializer\Annotation\Groups;
     security: "is_granted('ROLE_USER')",
     operations: [
         new Get(
-            name: 'api_companies_read',
+            name: 'api_companies_show',
             uriTemplate: '/companies/{id}',
             security: "is_granted('ROLE_USER')",
         ),
         new Post(
             name: 'api_companies_create',
             uriTemplate: '/companies',
+            openapiContext: [
+                'summary' => 'Register a new company',
+                'description' => 'Register a new company',
+                'requestBody' => [
+                    'content' => [
+                        'application/json' => [
+                            'schema' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'name' => ['type' => 'string'],
+                                    'siren' => ['type' => 'integer'],
+                                    'siret' => ['type' => 'integer'],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'responses' => [],
+            ],
             security: "is_granted('ROLE_USER')",
         ),
         new Put(
@@ -72,7 +91,6 @@ class Company
 
     #[ORM\ManyToOne(inversedBy: 'companies')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups("company:read")]
     private ?User $user = null;
 
     public function getId(): ?int
