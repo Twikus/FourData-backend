@@ -77,13 +77,13 @@ class Company
     #[Groups("company:read")]
     private ?string $address = null;
 
-    #[ORM\Column]
+    #[ORM\Column(length: 9)]
     #[Groups("company:read")]
-    private ?int $siren = null;
+    private ?string $siren = null;
 
-    #[ORM\Column]
+    #[ORM\Column(length: 14)]
     #[Groups("company:read")]
-    private ?int $siret = null;
+    private ?string $siret = null;
 
     #[ORM\Column(length: 30)]
     #[Groups("company:read")]
@@ -92,6 +92,10 @@ class Company
     #[ORM\ManyToOne(inversedBy: 'companies')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
+
+    #[ORM\Column]
+    #[Groups("company:read")]
+    private ?bool $status = null;
 
     public function getId(): ?int
     {
@@ -166,6 +170,18 @@ class Company
     public function setUserId(?User $user): static
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    public function isStatus(): ?bool
+    {
+        return $this->status;
+    }
+
+    public function setStatus(bool $status): static
+    {
+        $this->status = $status;
 
         return $this;
     }
