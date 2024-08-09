@@ -3,42 +3,39 @@
 namespace App\Controller;
 
 use App\Entity\Company;
+use App\Helper\CompanyHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Requirement\Requirement;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class CompanyController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
+    private CompanyHelper $companyHelper;
+    
+    public function __construct(EntityManagerInterface $entityManager, CompanyHelper $companyHelper)
     {
         $this->entityManager = $entityManager;
+        $this->companyHelper = $companyHelper;
     }
 
     #[Route('/api/companies/{id}', name: 'api_companies_show', methods: ['GET'], requirements: ['id' => Requirement::DIGITS])]
     public function show(int $id): Response
     {
-        // get the user information
-        $user = $this->getUser();
-
         // get the company by id
-        $company = $this->entityManager->getRepository(Company::class)->find($id);
-
-        // check if the company exists
-        if(!$company) {
+        $company = $this->companyHelper->findCompany($id);
+        if (!$company) {
             return $this->json(['error' => 'Company not found'], 404);
         }
 
-        // check if the user is the owner of the company
-        if($company->getUserId() !== $user) {
+        // check if the user is authorized to view the company
+        if (!$this->companyHelper->isUserAuthorized($company)) {
             return $this->json(['error' => 'Unauthorized'], 401);
         }
 
-        // return the company information
         return $this->json($company, 200, [], ['groups' => 'company:read']);
     }
 
@@ -47,84 +44,68 @@ class CompanyController extends AbstractController
     {
         // get the user information
         $user = $this->getUser();
-
-        // create a new company
-        $company = new Company();
-        $company->setUserId($user);
-
-        // get the request data
         $data = json_decode($request->getContent(), true);
 
-        // set the company data
-        $company->setName($data['name']);
-        $company->setAddress($data['adress']);
-        $company->setSiren($data['siren']);
-        $company->setSiret($data['siret']);
-        $company->setTvaNumber($data['tva_number']);
+        // get the company data
+        $companyData = $this->companyHelper->getCompanyData($data, $user);
+        if (isset($companyData['error'])) {
+            return $this->json($companyData, 400);
+        }
 
-        // save the company
+        // create the company
+        $company = new Company();
+        $company->setUserId($user);
+        $this->companyHelper->setCompanyData($company, $companyData);
+
         $this->entityManager->persist($company);
         $this->entityManager->flush();
 
-        // return the company information
         return $this->json($company, 201, [], ['groups' => 'company:read']);
     }
 
     #[Route('/api/companies/{id}', name: 'api_companies_update', methods: ['PUT'], requirements: ['id' => Requirement::DIGITS])]
     public function update(int $id, Request $request): Response
     {
-        // get the user information
-        $user = $this->getUser();
-
         // get the company by id
-        $company = $this->entityManager->getRepository(Company::class)->find($id);
-
-        // check if the company exists
-        if(!$company) {
+        $company = $this->companyHelper->findCompany($id);
+        if (!$company) {
             return $this->json(['error' => 'Company not found'], 404);
         }
 
-        // check if the user is the owner of the company
-        if($company->getUserId() !== $user) {
+        // check if the user is authorized to update the company
+        if (!$this->companyHelper->isUserAuthorized($company)) {
             return $this->json(['error' => 'Unauthorized'], 401);
         }
 
-        // get the request data
+        // update the company
         $data = json_decode($request->getContent(), true);
+        $autoFill = $data['autoFill'] ?? false;
+
+        // if autoFill is true, get the company data from the API
+        if ($autoFill) {
+            $data = $this->companyHelper->getCompanyData($data, $company->getUserId());
+        }
 
         // set the company data
-        $company->setName($data['name']);
-        $company->setAdress($data['adress']);
-        $company->setSiren($data['siren']);
-        $company->setSiret($data['siret']);
-        $company->setTvaNumber($data['tva_number']);
-
-        // set the updated_at
+        $this->companyHelper->setCompanyData($company, $data);
         $company->setUpdatedAt(new \DateTime());
 
-        // save the company
         $this->entityManager->flush();
 
-        // return the company information
         return $this->json($company, 200, [], ['groups' => 'company:read']);
     }
 
     #[Route('/api/companies/{id}', name: 'api_companies_delete', methods: ['DELETE'], requirements: ['id' => Requirement::DIGITS])]
     public function delete(int $id): Response
     {
-        // get the user information
-        $user = $this->getUser();
-
         // get the company by id
-        $company = $this->entityManager->getRepository(Company::class)->find($id);
-
-        // check if the company exists
-        if(!$company) {
+        $company = $this->companyHelper->findCompany($id);
+        if (!$company) {
             return $this->json(['error' => 'Company not found'], 404);
         }
 
-        // check if the user is the owner of the company
-        if($company->getUserId() !== $user) {
+        // check if the user is authorized to delete the company
+        if (!$this->companyHelper->isUserAuthorized($company)) {
             return $this->json(['error' => 'Unauthorized'], 401);
         }
 
@@ -132,7 +113,6 @@ class CompanyController extends AbstractController
         $this->entityManager->remove($company);
         $this->entityManager->flush();
 
-        // return the success message
         return $this->json(['message' => 'Company deleted']);
     }
 }
