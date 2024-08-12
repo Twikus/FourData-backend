@@ -2,13 +2,14 @@
 
 namespace App\Helper;
 
-use App\Transformer\CompanySirenTransformer;
-use App\Transformer\CompanySiretTransformer;
 use App\Entity\User;
 use App\Entity\Company;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use App\Transformer\CompanySirenTransformer;
+use App\Transformer\CompanySiretTransformer;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 
 class CompanyHelper
 {
@@ -32,30 +33,55 @@ class CompanyHelper
         $this->companySiretTransformer = $companySiretTransformer;
     }
 
+    public function findCompaniesByUser(User $user): array
+    {
+        return $this->entityManager->getRepository(Company::class)->findBy(['user' => $user]);
+    }
+
     public function getCompanyBySiren(int $siren): array
     {
-        $response = $this->client->request('GET', $_ENV['SIREN_API_URL'].'/unites_legales/'.$siren, [
-            'headers' => [
-                'X-Client-Secret' => $_ENV['SIREN_API_TOKEN']
-            ]
-        ]);
+        try {
+            $response = $this->client->request('GET', $_ENV['SIREN_API_URL'].'/unites_legales/'.$siren, [
+                'headers' => [
+                    'X-Client-Secret' => $_ENV['SIREN_API_TOKEN']
+                ]
+            ]);
+    
+            $data = $response->toArray();
+            
+            return $this->companySirenTransformer->transform($data);
+        } catch (ClientExceptionInterface $e) {
+            if ($e->getResponse()->getStatusCode() === 400) {
+                return ['error' => 'Invalid SIREN number'];
+            } else if ($e->getResponse()->getStatusCode() === 404) {
+                return ['error' => 'Company not found'];
+            }
 
-        $data = $response->toArray();
-        
-        return $this->companySirenTransformer->transform($data);
+            throw $e;
+        }
     }
 
     public function getCompanyBySiret(int $siret): array
     {
-        $response = $this->client->request('GET', $_ENV['SIREN_API_URL'].'/etablissements/'.$siret, [
-            'headers' => [
-                'X-Client-Secret' => $_ENV['SIREN_API_TOKEN']
-            ]
-        ]);
+        try {
+            $response = $this->client->request('GET', $_ENV['SIREN_API_URL'].'/etablissements/'.$siret, [
+                'headers' => [
+                    'X-Client-Secret' => $_ENV['SIREN_API_TOKEN']
+                ]
+            ]);
 
-        $data = $response->toArray();
+            $data = $response->toArray();
         
-        return $this->companySiretTransformer->transform($data);
+            return $this->companySiretTransformer->transform($data);
+        } catch (ClientExceptionInterface $e) {
+            if ($e->getResponse()->getStatusCode() === 400) {
+                return ['error' => 'Invalid SIREN number'];
+            } else if ($e->getResponse()->getStatusCode() === 404) {
+                return ['error' => 'Company not found'];
+            }
+            
+            throw $e;
+        }
     }
 
     public function findCompany(int $id = null): ?Company
