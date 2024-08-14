@@ -178,6 +178,9 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
                     ],
                 ],
             ],
+            extraProperties: [
+                'standard_put' => true,
+            ],
             security: "object == user",
             securityMessage: "You can only update your own account."
         ),
