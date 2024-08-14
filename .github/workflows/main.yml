@@ -56,6 +56,8 @@ jobs:
         run: php bin/console doctrine:migrations:migrate --no-interaction --env=test
 
       - name: Load fixtures
+        env:
+          SIREN_API_TOKEN: ${{ secrets.SIREN_API_TOKEN }}
         run: php bin/console doctrine:fixtures:load --no-interaction --env=test
 
       - name: Execute tests (Unit and Feature tests) via PHPUnit
