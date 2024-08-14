@@ -33,7 +33,7 @@ class RegistrationController extends AbstractController
         $form = $this->createForm(UserType::class, $user);
         $form->submit($data);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isValid()) {
             $user->setRoles(['ROLE_USER']);
             $user->setPassword(
                 $userPasswordHasher->hashPassword(
@@ -58,6 +58,12 @@ class RegistrationController extends AbstractController
             ]);
         }
 
-        return new JsonResponse(['error' => 'Form not submitted'], JsonResponse::HTTP_BAD_REQUEST);
+        $errors = [];
+        foreach ($form->getErrors(true) as $error) {
+            $errors[] = $error->getMessage();
+        }
+
+        return new JsonResponse($errors, JsonResponse::HTTP_BAD_REQUEST);
+
     }
 }
