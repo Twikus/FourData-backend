@@ -24,6 +24,8 @@ class CompanyTest extends ApiTestCase
         $this->assertResponseIsSuccessful();
         $data = $client->toArray();
         $this->token = $data['token'];
+
+        var_dump($this->token);
     }
 
     public function testCreateCompanyBySiren(): void
