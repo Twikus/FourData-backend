@@ -14,15 +14,18 @@ class CompanyTest extends ApiTestCase
     {
         self::bootKernel();
 
-        $client = static::createClient()->request('POST', '/api/login', [
+        $client = static::createClient();
+        $response = $client->request('POST', '/api/login', [
             'json' => [
                 'username' => 'user@test.com',
                 'password' => 'password',
             ],
         ]);
 
+        var_dump('response', $response->getContent());
+
         $this->assertResponseIsSuccessful();
-        $data = $client->toArray();
+        $data = $response->toArray();
         $this->token = $data['token'];
 
         var_dump('data', $data);
