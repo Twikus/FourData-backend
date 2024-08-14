@@ -34,6 +34,12 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
+      - name: Generate JWT keys
+        run: |
+          mkdir -p config/jwt
+          openssl genpkey -algorithm RSA -out config/jwt/private.pem -pkeyopt rsa_keygen_bits:2048
+          openssl rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem
+
       - name: Copy .env.test.local
         run: php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
 
