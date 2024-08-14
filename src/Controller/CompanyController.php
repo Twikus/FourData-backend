@@ -22,6 +22,18 @@ class CompanyController extends AbstractController
         $this->companyHelper = $companyHelper;
     }
 
+    #[Route('/api/companies', name: 'api_companies_index', methods: ['GET'])]
+    public function index(Request $request): Response
+    {
+        // get the user information
+        $user = $this->getUser();
+
+        // get the companies by user
+        $companies = $this->companyHelper->findCompaniesByUser($user);
+
+        return $this->json($companies, 200, [], ['groups' => 'company:read']);
+    }
+
     #[Route('/api/companies/{id}', name: 'api_companies_show', methods: ['GET'], requirements: ['id' => Requirement::DIGITS])]
     public function show(int $id): Response
     {
