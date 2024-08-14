@@ -2,14 +2,15 @@
 
 namespace App\Entity;
 
-use App\Repository\UserRepository;
-
 use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
+
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+
+use App\Repository\UserRepository;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
@@ -19,12 +20,11 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
 
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -231,20 +231,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
-    #[Assert\NotBlank]
-    #[Assert\Email(
-        message: 'The email {{ value }} is not a valid email.',
-    )]
     #[Groups("user:show")]
     private ?string $email = null;
     
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank]
     #[Groups("user:show")]
     private ?string $firstname = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank]
     #[Groups("user:show")]
     private ?string $lastname = null;
 
@@ -258,7 +252,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var string The hashed password
      */
-    #[Assert\NotBlank]
     #[ORM\Column]
     private ?string $password = null;
 
@@ -286,10 +279,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     
     public function setEmail(string $email): static
     {
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw new BadRequestHttpException('The email is not valid.');
-        }
-    
         $this->email = $email;
     
         return $this;
