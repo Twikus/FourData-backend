@@ -18,6 +18,7 @@ class CompanyHelper
     private Security $security;
     private CompanySirenTransformer $companySirenTransformer;
     private CompanySiretTransformer $companySiretTransformer;
+    private $sirenApiToken;
 
     public function __construct(
         HttpClientInterface $client, 
@@ -31,6 +32,7 @@ class CompanyHelper
         $this->security = $security;
         $this->companySirenTransformer = $companySirenTransformer;
         $this->companySiretTransformer = $companySiretTransformer;
+        $this->sirenApiToken = getenv('SIREN_API_TOKEN');
     }
 
     public function findCompaniesByUser(User $user): array
@@ -43,7 +45,7 @@ class CompanyHelper
         try {
             $response = $this->client->request('GET', $_ENV['SIREN_API_URL'].'/unites_legales/'.$siren, [
                 'headers' => [
-                    'X-Client-Secret' => $_ENV['SIREN_API_TOKEN']
+                    'X-Client-Secret' => $_ENV['SIREN_API_TOKEN'] ?? $this->sirenApiToken
                 ]
             ]);
     
@@ -66,7 +68,7 @@ class CompanyHelper
         try {
             $response = $this->client->request('GET', $_ENV['SIREN_API_URL'].'/etablissements/'.$siret, [
                 'headers' => [
-                    'X-Client-Secret' => $_ENV['SIREN_API_TOKEN']
+                    'X-Client-Secret' => $_ENV['SIREN_API_TOKEN'] ?? $this->sirenApiToken
                 ]
             ]);
 

@@ -61,4 +61,5 @@ jobs:
       - name: Execute tests (Unit and Feature tests) via PHPUnit
         env:
           DATABASE_URL: mysql://root:root@127.0.0.1:3306/test_db
+          SIREN_API_TOKEN: ${{ secrets.SIREN_API_TOKEN }}
         run: vendor/bin/phpunit
