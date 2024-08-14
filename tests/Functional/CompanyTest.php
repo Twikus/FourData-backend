@@ -13,43 +13,27 @@ class CompanyTest extends ApiTestCase
     public function setUp(): void
     {
         self::bootKernel();
-    }
 
-    protected function createClientWithCredentials($token = null): Client
-    {
-        $token = $token ?: $this->getToken();
-
-        return static::createClient([], ['headers' => ['authorization' => 'Bearer '.$token]]);
-    }
-    
-    protected function getToken($body = []): string
-    {
-        if ($this->token) {
-            return $this->token;
-        }
-
-        $response = static::createClient()->request('POST', '/api/login', ['json' => $body ?: [
-            'username' => 'user@test.com',
-            'password' => 'password',
-        ]]);
+        $client = static::createClient()->request('POST', '/api/login', [
+            'json' => [
+                'username' => 'user@test.com',
+                'password' => 'password',
+            ],
+        ]);
 
         $this->assertResponseIsSuccessful();
-        $data = $response->toArray();
+        $data = $client->toArray();
         $this->token = $data['token'];
-
-        return $data['token'];
     }
 
     public function testCreateCompanyBySiren(): void
     {
-        $token = $this->getToken();
-
         $response = static::createClient()->request('POST', '/api/companies', [
             'json' => [
                 'siren' => 502704075,
             ],
             'headers' => [
-                'Authorization' => 'Bearer ' . $token,
+                'Authorization' => 'Bearer ' . $this->token,
             ],
         ]);
 
@@ -61,14 +45,12 @@ class CompanyTest extends ApiTestCase
 
     public function testCreateCompanyBySirenNotOK(): void
     {
-        $token = $this->getToken();
-
-        $response = static::createClient()->request('POST', '/api/companies', [
+        static::createClient()->request('POST', '/api/companies', [
             'json' => [
                 'siren' => 123456789,
             ],
             'headers' => [
-                'Authorization' => 'Bearer ' . $token,
+                'Authorization' => 'Bearer ' . $this->token,
             ],
         ]);
 
@@ -80,14 +62,12 @@ class CompanyTest extends ApiTestCase
 
     public function testCreateCompanyBySiretOK(): void
     {
-        $token = $this->getToken();
-
         $response = static::createClient()->request('POST', '/api/companies', [
             'json' => [
                 'siret' => 46920141200027,
             ],
             'headers' => [
-                'Authorization' => 'Bearer ' . $token,
+                'Authorization' => 'Bearer ' . $this->token,
             ],
         ]);
 
@@ -99,14 +79,12 @@ class CompanyTest extends ApiTestCase
 
     public function testCreateCompanyBySiretNotOK(): void
     {
-        $token = $this->getToken();
-
-        $response = static::createClient()->request('POST', '/api/companies', [
+        static::createClient()->request('POST', '/api/companies', [
             'json' => [
                 'siret' => 12345678900027,
             ],
             'headers' => [
-                'Authorization' => 'Bearer ' . $token,
+                'Authorization' => 'Bearer ' . $this->token,
             ],
         ]);
 
@@ -118,16 +96,22 @@ class CompanyTest extends ApiTestCase
 
     public function tearDown(): void
     {
-        $token = $this->getToken();
+        $client = static::createClient();
 
-        $client = $this->createClientWithCredentials($token);
-
-        $response = $client->request('GET', '/api/companies');
+        $response = $client->request('GET', '/api/companies', [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $this->token,
+            ],
+        ]);
 
         $data = $response->toArray();
 
         foreach ($data as $company) {
-            $client->request('DELETE', '/api/companies/'.$company['id']);
+            $client->request('DELETE', '/api/companies/'.$company['id'], [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->token,
+                ],
+            ]);
         }
     }
 }
