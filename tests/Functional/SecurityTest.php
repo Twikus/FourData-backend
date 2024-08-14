@@ -7,8 +7,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class SecurityTest extends ApiTestCase
 {
-    private ?string $token = null;
-
     public function testLoginOK(): void
     {
         $response = static::createClient()->request('GET', '/api/login', [
@@ -20,8 +18,7 @@ class SecurityTest extends ApiTestCase
 
         $this->assertResponseIsSuccessful();
         
-        $data = $response->toArray();
-        self::assertArrayHasKey('token', $data);
+        self::assertArrayHasKey('token', $response->toArray());
     }
 
     public function testLoginNotOK(): void
@@ -40,7 +37,7 @@ class SecurityTest extends ApiTestCase
     {
         $response = static::createClient()->request('POST', '/api/register', [
             'json' => [
-                'email' => 'test@valid.fr',
+                'email' => 'user' . uniqid() . '@valid.com',
                 'password' => 'password',
                 'firstname' => 'John',
                 'lastname' => 'Doe',
@@ -48,11 +45,7 @@ class SecurityTest extends ApiTestCase
         ]);
 
         $this->assertResponseIsSuccessful();
-
-        $data = $response->toArray();
-        $this->token = $data['token'];
-
-        self::assertArrayHasKey('token', $data);
+        self::assertArrayHasKey('token', $response->toArray());
     }
 
     public function testRegistrationNotOK(): void
