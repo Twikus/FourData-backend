@@ -49,6 +49,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Put(
             name: 'api_companies_update',
             uriTemplate: '/companies/{id}',
+            extraProperties: [
+                'standard_put' => true,
+            ],
             security: "is_granted('ROLE_USER')",
         ),
         new Delete(
