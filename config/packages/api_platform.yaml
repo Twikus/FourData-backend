@@ -1,4 +1,6 @@
 api_platform:
+    use_symfony_listeners: true
+    keep_legacy_inflector: false
     title: Hello FourData !
     description: 'Welcome to the FourData API'
     version: 1.0.0

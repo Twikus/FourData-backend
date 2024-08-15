@@ -2,12 +2,16 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Form\UserType;
+
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
+
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
 class RegistrationController extends AbstractController
@@ -21,35 +25,45 @@ class RegistrationController extends AbstractController
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
 
-        if (!isset($data['email'], $data['password'], $data['firstname'], $data['lastname'])) {
-            return new JsonResponse(['error' => 'Invalid data'], JsonResponse::HTTP_BAD_REQUEST);
+        if (!$data) {
+            return new JsonResponse(['error' => 'Invalid JSON'], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $user = new User();
-        $user->setEmail($data['email']);
-        $user->setFirstname($data['firstname']);
-        $user->setLastname($data['lastname']);
-        $user->setRoles(['ROLE_USER']);
-        $user->setPassword(
-            $userPasswordHasher->hashPassword(
-                $user,
-                $data['password']
-            )
-        );
+        $form = $this->createForm(UserType::class, $user);
+        $form->submit($data);
 
-        $entityManager->persist($user);
-        $entityManager->flush();
+        if ($form->isValid()) {
+            $user->setRoles(['ROLE_USER']);
+            $user->setPassword(
+                $userPasswordHasher->hashPassword(
+                    $user,
+                    $user->getPassword()
+                )
+            );
 
-        $token = $JWTManager->create($user);
+            $entityManager->persist($user);
+            $entityManager->flush();
 
-        return new JsonResponse([
-            'user' => [
-                'email' => $user->getEmail(),
-                'firstname' => $user->getFirstname(),
-                'lastname' => $user->getLastname(),
-                'roles' => $user->getRoles()
-            ],
-            'token' => $token
-        ]);
+            $token = $JWTManager->create($user);
+
+            return new JsonResponse([
+                'user' => [
+                    'email' => $user->getEmail(),
+                    'firstname' => $user->getFirstname(),
+                    'lastname' => $user->getLastname(),
+                    'roles' => $user->getRoles()
+                ],
+                'token' => $token
+            ]);
+        }
+
+        $errors = [];
+        foreach ($form->getErrors(true) as $error) {
+            $errors[] = $error->getMessage();
+        }
+
+        return new JsonResponse($errors, JsonResponse::HTTP_BAD_REQUEST);
+
     }
 }

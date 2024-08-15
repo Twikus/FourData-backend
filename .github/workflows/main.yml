@@ -34,6 +34,12 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
+      - name: Generate JWT keys
+        run: |
+          mkdir -p config/jwt
+          openssl genpkey -algorithm RSA -out config/jwt/private.pem -pkeyopt rsa_keygen_bits:2048
+          openssl rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem
+
       - name: Copy .env.test.local
         run: php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
 
@@ -55,10 +61,13 @@ jobs:
       - name: Migrate database 
         run: php bin/console doctrine:migrations:migrate --no-interaction --env=test
 
-    #   - name: Load fixtures
-    #     run: php bin/console doctrine:fixtures:load --no-interaction --env=test
+      - name: Load fixtures
+        env:
+          SIREN_API_TOKEN: ${{ secrets.SIREN_API_TOKEN }}
+        run: php bin/console doctrine:fixtures:load --no-interaction --env=test
 
-    #   - name: Execute tests (Unit and Feature tests) via PHPUnit
-    #     env:
-    #       DATABASE_URL: mysql://root:root@127.0.0.1:3306/test_db
-    #     run: vendor/bin/phpunit
+      - name: Execute tests (Unit and Feature tests) via PHPUnit
+        env:
+          DATABASE_URL: mysql://root:root@127.0.0.1:3306/fourdata
+          SIREN_API_TOKEN: ${{ secrets.SIREN_API_TOKEN }}
+        run: vendor/bin/phpunit
