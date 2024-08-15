@@ -220,7 +220,6 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    // TODO : Security of the fields
     use TimestampableEntity;
     use SoftDeleteableEntity;
 

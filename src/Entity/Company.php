@@ -60,7 +60,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
 )]
 class Company
 {
-    // TODO : Security of the fields
     use TimestampableEntity;
 
     #[ORM\Id]
