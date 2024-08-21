@@ -23,7 +23,7 @@ class CompanyController extends AbstractController
     }
 
     #[Route('/api/companies', name: 'api_companies_index', methods: ['GET'])]
-    public function index(Request $request): Response
+    public function index(): Response
     {
         // get the user information
         $user = $this->getUser();

@@ -20,7 +20,6 @@ class CompanySirenTransformer
 
         $legal= $data['unite_legale'];
 
-        // pour chaque établissement, on vérifie si l'état administratif est 'A', sinon on passe a l'établissement suivant, si aucun n'est 'A', on retourne status false et on prend le dernier établissement
         foreach ($legal['etablissements'] as $key => $etablissement) {
             if ($etablissement['etat_administratif'] === 'A') {
                 $index = $key;
