@@ -37,7 +37,7 @@ class CompanyHelper
 
     public function findCompaniesByUser(User $user): array
     {
-        return $this->entityManager->getRepository(Company::class)->findBy(['user' => $user]);
+        return $this->entityManager->getRepository(Company::class)->findByUser($user);
     }
 
     public function getCompanyBySiren(int $siren): array
